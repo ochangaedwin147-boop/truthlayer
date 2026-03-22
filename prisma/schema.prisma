@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User accounts
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String         // Hashed password
+  name          String?
+  apiKey        ApiKey?
+  subscription  Subscription?
+  verifications Verification[]
+  usageLogs     UsageLog[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+// API Key for developers
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isActive  Boolean  @default(true)
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Text verification records
+model Verification {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentHash  String   // SHA256 hash of content
+  content      String   // Original text content
+  trustScore   Int      // 0-100 score
+  analysis     String   // AI analysis result
+  flags        String?  // JSON string of warning flags
+  createdAt    DateTime @default(now())
+}
+
+// Subscription plans
+model Subscription {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            String   @default("free") // free, starter, pro, enterprise
+  stripeCustomerId String?
+  stripeSubscriptionId String?
+  status          String   @default("active") // active, canceled, expired
+  currentPeriodEnd DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// Usage tracking for rate limiting
+model UsageLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // verify_text, api_call
+  createdAt DateTime @default(now())
+}
