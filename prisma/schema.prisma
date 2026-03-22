@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // User accounts
@@ -20,6 +21,7 @@ model User {
   subscription  Subscription?
   verifications Verification[]
   usageLogs     UsageLog[]
+  payments      Payment[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -70,4 +72,25 @@ model UsageLog {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   action    String   // verify_text, api_call
   createdAt DateTime @default(now())
+}
+
+// Payment records for M-Pesa and PayPal
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String?
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email           String   // User email for payment lookup
+  amount          Float
+  currency        String   @default("USD")
+  method          String   // mpesa, paypal, bank
+  status          String   @default("pending") // pending, completed, failed
+  transactionId   String?  @unique // M-Pesa reference or PayPal transaction ID
+  phone           String?  // For M-Pesa
+  merchantRequestId String? // M-Pesa specific
+  checkoutRequestId String? @unique // M-Pesa specific
+  reference       String?  // Payment reference
+  plan            String   // starter, pro, enterprise
+  rawResponse     String?  // Raw callback response
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
