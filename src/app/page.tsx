@@ -452,6 +452,35 @@ export default function Home() {
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
+          
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-slate-700/50 p-4 flex flex-col gap-3">
+              <Dialog>
+                <DialogTrigger asChild><Button variant="ghost" className="w-full justify-start">Login</Button></DialogTrigger>
+                <DialogContent className="bg-slate-800 border-slate-700 text-white">
+                  <DialogHeader><DialogTitle>Login to TruthLayer</DialogTitle></DialogHeader>
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div><Label>Email</Label><Input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="bg-slate-700 border-slate-600" required /></div>
+                    <div><Label>Password</Label><Input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="bg-slate-700 border-slate-600" required /></div>
+                    <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={authLoading}>{authLoading ? 'Logging in...' : 'Login'}</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger asChild><Button className="w-full bg-emerald-600 hover:bg-emerald-700">Get Started</Button></DialogTrigger>
+                <DialogContent className="bg-slate-800 border-slate-700 text-white">
+                  <DialogHeader><DialogTitle>Create your account</DialogTitle></DialogHeader>
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div><Label>Name (optional)</Label><Input value={signupName} onChange={(e) => setSignupName(e.target.value)} className="bg-slate-700 border-slate-600" /></div>
+                    <div><Label>Email</Label><Input type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} className="bg-slate-700 border-slate-600" required /></div>
+                    <div><Label>Password (min 6 characters)</Label><Input type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} className="bg-slate-700 border-slate-600" required /></div>
+                    <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={authLoading}>{authLoading ? 'Creating...' : 'Create Account'}</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </header>
 
         {/* Hero */}
