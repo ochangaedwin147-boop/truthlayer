@@ -7,7 +7,7 @@ import { PLANS, type PlanType } from '@/lib/plans';
 export async function GET(request: NextRequest) {
   try {
     const user = await getUserFromSession(request);
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'Not authenticated' },
@@ -42,57 +42,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Update subscription (would normally integrate with Stripe)
+// POST is disabled - payment required via /api/payment/initiate
 export async function POST(request: NextRequest) {
-  try {
-    const user = await getUserFromSession(request);
-    
-    if (!user) {
-      return NextResponse.json(
-        { error: 'Not authenticated' },
-        { status: 401 }
-      );
-    }
-
-    const { plan } = await request.json();
-
-    if (!plan || !PLANS[plan as PlanType]) {
-      return NextResponse.json(
-        { error: 'Invalid plan' },
-        { status: 400 }
-      );
-    }
-
-    // In production, this would integrate with Stripe
-    // For now, we'll just update the subscription directly
-    const subscription = await db.subscription.upsert({
-      where: { userId: user.id },
-      update: {
-        plan,
-        status: 'active',
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
-      },
-      create: {
-        userId: user.id,
-        plan,
-        status: 'active',
-        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      }
-    });
-
-    return NextResponse.json({
-      success: true,
-      subscription: {
-        plan: subscription.plan,
-        status: subscription.status,
-        currentPeriodEnd: subscription.currentPeriodEnd
-      }
-    });
-  } catch (error) {
-    console.error('Update subscription error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    { error: 'Payment required. Please use M-Pesa, PayPal, or bank transfer to upgrade your plan.' },
+    { status: 402 }
+  );
 }
